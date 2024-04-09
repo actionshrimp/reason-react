@@ -107,7 +107,16 @@ A notable exception is that when there is only one dependency, the relevant `use
 useEffect1(effect, [|dep|])
 ```
 
-However, as the length of the array is not specified, you could pass an array of arbitrary length, including the empty array, `[||]`.
+However, as the length of the array is not specified, you could pass an array of arbitrary length, including the empty array, `[||]`. Try not to get caught out here when moving from `useEffect1` to `useEffect2` if the array has grown to include multiple elements of the same type in the meantime:
+
+```reason
+useEffect1(effect, [| 1 |])
+     /* ^^^ -- Compiles to javascript as `useEffect(effect, [1])` */
+useEffect1(effect, [| 1, 2, 3 |])
+     /* ^^^ -- Compiles to javascript as `useEffect(effect, [1, 2, 3])` */
+useEffect2(effect, [| 1, 2, 3 |], "foo")
+     /* ^^^ --- !! Compiles to javascript as `useEffect(effect, [ [1, 2, 3], "foo" ])` */
+```
 
 Reason also always opts for the safest form of a given hook as well. So `React.useState` in JS can take an initial value or a function that returns an initial value. The former cannot be used safely in all situations, so ReasonReact only supports the second form which takes a function and uses the return.
 
